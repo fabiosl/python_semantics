@@ -1,0 +1,230 @@
+\documentclass{llncs}
+  \pdfpagewidth=8.5truein
+  \pdfpageheight=11truein
+
+\usepackage{graphicx,url} 
+\usepackage{tikz}
+\usepackage{times}
+%\usepackage[dvips]{graphicx}
+\usepackage{alltt} 
+\usepackage{amsmath}
+\usepackage{latexsym}
+\usepackage{listings}
+
+%%%%% OUR MACROS
+\newcommand{\sem}[1]{[ \! [ #1 ] \! ]}
+\newcommand{\guard}[1]{[ #1 ]}
+\newcommand{\tuple}[1]{\langle #1 \rangle}
+\newcommand{\trad}[1]{{\cal T}\sem{ #1 }}
+\newcommand{\setof}[1]{\{ #1 \} }
+\newcommand{\eval}[2]{\mathit{Eval}_{#1}(#2)}
+
+
+\def\tr{\rhd}    % transition relation
+
+\newcommand{\fpfrule}[2]{{{{\displaystyle #1}\over{\displaystyle #2}}}}
+\newcommand{\pfrule}[2]{\begin{array}{c} #1 \\ \hline #2 \end{array}}
+\newcommand{\pfruleN}[3]{\begin{array}{c} #1 \\ \hline #3 \end{array} \ (#2)}
+%\newcommand{\pfrule}[2]{\begin{array}{c} #1 \\[-0.5em] \hline #2 \end{array}}
+
+\newcommand{\rulegap}{\qquad}
+
+\newcommand{\alberto}[1]{\marginpar{\textcolor{magenta}{\textbf{Alberto: }#1}}}
+\newcommand{\ialberto}[1]{\textcolor{blue}{\textbf{Alberto: }#1}}
+
+\newcommand{\dan}[1]{\textcolor{red}{#1}}
+\newcommand{\idaniel}[1]{\textcolor{red}{\textbf{Daniel: }#1}}
+
+\def\vertices{{\cal V}}
+\def\crossDD{\mathsf{crossDD}}
+\newcommand{\comentario}[1]{}
+
+\lstset{numbers=right, numbersep=5pt, numberstyle=\tiny, stepnumber=1,escapechar=\!,columns=fullflexible,
+        morekeywords={procedure,let,for,do,if,then,else,add,choose,end,while,true,false,rise,exception,extend,resume,to}}
+
+\def\pews{$\mu$BP}
+\def\PEWSAM{BP-AM}
+
+
+\begin{document}
+
+\paragraph{Esquema da máquina:}
+
+$$\tuple{G, \rho, I, O, M, T_E, N_{MT}} \ \tr\ \tuple{G', \rho', I', O', M', T'_E, N'_{MT}}$$
+
+\paragraph{Operation Call:}
+
+$$
+\pfrule{
+\mathit{indegree}(w) = 0 \qquad 
+\overline{a} = \eval{\rho}{\overline{E}} \qquad
+A'_c = A_c - \setof{w\mapsto v \ | \ v \in V} \qquad
+A'_d = A_d - \setof{w\mapsto v \ | \ v \in V} \\[1mm]
+G = \tuple{V[w:S!\overline{E}, \, w' : S?\overline{X}], A_c[w \mapsto w'], A_d} \qquad
+G' = \tuple{V[w' : S?\overline{X}], A'_c, A'_d}
+}{
+\tuple{G,\rho, I, O, M, T_E, N_{MT}}
+\; \tr \;
+\tuple{G',\rho, I, O[\tuple{S, w', \overline{a}}], M[\tuple{w:S!\overline{E}, \, w', \mathit{now()}, N_{MT}}], T_E, N_{MT}}
+}
+$$
+
+\paragraph{Operation Response (Success):}
+$$
+\pfrule{
+\mathit{indegree}(w') = 0 \\[1mm]
+G = \tuple{V[w' : S?\overline{X}], A_c, A_d} \qquad
+A'_c = A_c - \setof{w'\mapsto v \ | \ v \in V} \qquad
+A'_d = A_d - \setof{w'\mapsto v \ | \ v \in V} \\[1mm]
+G' = \tuple{V, A'_c, A'_d} \qquad \qquad
+\rho' = \rho[\setof{(X_i\mapsto t_i) \ | \ 1 \leq i \leq |\overline{X}|}]
+}{
+\tuple{G,\rho, I[\tuple{S, w', \overline{t}}], O, M[\tuple{w:S!\overline{E}, \, w', T_C, N_{T}}], T_E, N_{MT}}
+\; \tr \;
+\tuple{G',\rho', I, O, M, T_E, N_{MT}}
+}
+$$
+
+\paragraph{Operation Response (Failure):}
+$$
+\pfrule{
+\mathit{indegree}(w') = 0 \qquad
+\mathit{now()} - T_C > T_E \qquad
+N_T > 0 \qquad
+\forall \overline{t}. \tuple{S, w', \overline{t}} \not\in I \\[1mm]
+G = \tuple{V[w' : S?\overline{X}], A_c, A_d} \qquad
+\overline{a} = \eval{\rho}{\overline{E}} \qquad
+M'= M[\tuple{w:S!\overline{E}, \, w', \mathit{now()}, N_{T}-1}]
+}{
+\tuple{G,\rho, I, O, M[\tuple{w:S!\overline{E}, \, w', T_C, N_{T}}], T_E, N_{MT}}
+\; \tr \;
+\tuple{G,\rho, I, O[\tuple{S, w', \overline{a}}], M', T_E, N_{MT}}
+}
+$$
+
+\paragraph{Rebind}
+
+$$
+\trad{S_1(\overline{E_1}, \overline{X_1}) \% S_2(\overline{E_2}, \overline{X_2}) \% \dots \% S_n(\overline{E_n}, \overline{X_n})}  =  \\
+\begin{array}[t]{l}
+\mathbf{let}\ \ \ S= \mathit{newName}(\ ) ; \\
+   \qquad K = [S_1!\overline{E_1},\dots, S_n!\overline{E_n}]\\
+\mathbf{in}\\
+\qquad\tuple{\setof{w:S!K, \, w' : S?\overline{X}}, \setof{w \mapsto w'}, \emptyset}
+\end{array}
+$$
+
+\paragraph{Operation Call:}
+
+$$
+\pfrule{
+\mathit{indegree}(w) = 0 \qquad 
+G = \tuple{V[w:S!K, \, w' : S?\overline{X}], A_c[w \mapsto w'], A_d} \\[1mm]
+K = [S_1!\overline{E_1},\dots, S_n!\overline{E_n}] \qquad \overline{a} = \eval{\rho}{\overline{E_1}} \\[1mm]
+A'_c = A_c - \setof{w\mapsto v \ | \ v \in V} \qquad
+A'_d = A_d - \setof{w\mapsto v \ | \ v \in V} \qquad
+G' = \tuple{V[w' : S_1?\overline{X}], A'_c, A'_d}
+}{
+\tuple{G,\rho, I, O, M, T_E, N_{MT}}
+\; \tr \;
+\tuple{G',\rho, I, O[\tuple{S_1, w', \overline{a}}], M[\tuple{w:S!K, \, w', \mathit{now()}, N_{MT}}], T_E, N_{MT}}
+}
+$$
+
+\paragraph{Operation Response (Success):}
+$$
+\pfrule{
+\mathit{indegree}(w') = 0 \qquad
+G = \tuple{V[w' : S?\overline{X}], A_c, A_d} \qquad
+K = [S!\overline{E},\dots] \\[1mm]
+A'_c = A_c - \setof{w'\mapsto v \ | \ v \in V} \qquad
+A'_d = A_d - \setof{w'\mapsto v \ | \ v \in V} \\[1mm]
+G' = \tuple{V, A'_c, A'_d} \qquad
+\rho' = \rho[\setof{(X_i\mapsto t_i) \ | \ 1 \leq i \leq |\overline{X}|}]
+}{
+\tuple{G,\rho, I[\tuple{S, w', \overline{t}}], O, M[\tuple{w:S'!K, \, w', T_C, N_{T}}], T_E, N_{MT}}
+\; \tr \;
+\tuple{G',\rho', I, O, M, T_E, N_{MT}}
+}
+$$
+
+\paragraph{Operation Response (Timeout, retry):}
+$$
+\pfrule{
+\mathit{indegree}(w') = 0 \qquad
+\mathit{now()} - T_C > T_E \qquad
+N_T > 0 \qquad
+\forall \overline{t}. \tuple{S, w', \overline{t}} \not\in I \\[1mm]
+G = \tuple{V[w' : S?\overline{X}], A_c, A_d} \qquad
+K = [S!\overline{E},\dots] \\[1mm]
+\overline{a} = \eval{\rho}{\overline{E}} \qquad
+M'= M[\tuple{w:S'!K, w', \mathit{now()}, N_{T}-1}]
+}{
+\tuple{G,\rho, I, O, M[\tuple{w:S'!K, w', T_C, N_{T}}], T_E, N_{MT}}
+\; \tr \;
+\tuple{G,\rho, I, O[\tuple{S, w', \overline{a}}], M', T_E, N_{MT}}
+}
+$$
+
+
+\paragraph{Operation Response (Timeout, no-retry, non-empty stack):}
+$$
+\pfrule{
+\mathit{indegree}(w') = 0 \qquad
+\mathit{now()} - T_C > T_E \qquad
+\forall \overline{t}. \tuple{S_1, w', \overline{t}} \not\in I \\[1mm]
+G = \tuple{V[w' : S_1?\overline{X}], A_c, A_d} \qquad
+K = [S_1!\overline{E}, S_2!\overline{E_2},\dots] \qquad
+\overline{a} = \eval{\rho}{\overline{E_2}} \qquad
+K' = [S_2!\overline{E_2},\dots] \\[1mm]
+M'= M[\tuple{w:S'!K', w', \mathit{now()}, N_{MT}}] \qquad
+G' = \tuple{V[w' : S_2?\overline{X}], A_c, A_d}
+}{
+\tuple{G,\rho, I, O, M[\tuple{w:S'!K, w', T_C, 0}], T_E, N_{MT}}
+\; \tr \;
+\tuple{G',\rho, I, O[\tuple{S_2, w', \overline{a}}], M', T_E, N_{MT}}
+}
+$$
+
+
+\paragraph{Sub-Workflows:}
+
+$$
+\trad{\setof{P_1\% P_2\% \dots \% P_n}}  =  \tuple{\setof{w:[P_1, P_2, \dots, P_n]}, \emptyset, \emptyset}
+$$
+
+
+
+\paragraph{Sub-Workflows: Success!}
+$$
+\pfrule{
+\tuple{\trad{P_1},\rho, I, O, M, T_E, N_{MT}}
+\; \tr^* \;
+\tuple{\tuple{\emptyset, \emptyset, \emptyset},\rho', I', O', M', T_E, N_{MT}} \\[1mm]
+A'_c = A_c - \setof{v\mapsto v' \ | \ v' \in V} \qquad
+A'_d = A_d - \setof{v\mapsto v' \ | \ v' \in V}
+}{
+\tuple{\tuple{V[v:[P_1,\dots]], A_c, A_d},\rho, I, O, M, T_E, N_{MT}}
+\; \tr \;
+\tuple{\tuple{V, A'_c, A'_d},\rho', I', O', M', T_E, N_{MT}}
+}
+$$
+
+\paragraph{Sub-Workflows: First alternative failed}
+$$
+\pfrule{
+\tuple{\trad{P_1},\rho, I, O, M, T_E, N_{MT}}
+\; \tr^* \;
+\tuple{\tuple{V', A'_c, A'_d},\rho', I', O', M', T_E, N_{MT}}
+\; \not\tr \;\\[1mm]
+V' \neq \emptyset
+}{
+\tuple{\tuple{V[v:[P_1,P_2\dots]], A_c, A_d},\rho, I, O, M, T_E, N_{MT}}
+\; \tr \;
+\tuple{\tuple{V[v:[P_2,\dots]], A_c, A_d},\rho', I', O', M', T_E, N_{MT}}
+}
+$$
+
+
+
+\end{document}

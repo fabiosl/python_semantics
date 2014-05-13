@@ -1,28 +1,41 @@
-chars = a | b | c | d | ... | Z | chars chars
-string = "" | "chars" | 'chars'
-
-num_chars: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | num_chars num_chars
-ALGEBRA_OP = + | - | * | /
-num: num_chars | num_chars . num_chars | num_chars ALGEBRA_OP num_chars
-
-LOG_OP:=  OR, AND
-NUM_LOG_OP: > | >= | < | <= | == | !=
-logic_exp = True | False | logic_exp LOG_OP logic_exp | num NUM_LOG_OP num 
-
-
-list_exp: exp | exp , exp
+list_elem: exp | exp , list_elem
 list: [] | [list_elem] 
 
-exp: string | num | logical_exp | list | (exp) | None | function_call
+exp: string_literal | 
+	 num_literal | 
+	 bool_literal | 
+	 list | 
+	 (exp) | 
+	 None | 
+	 function_call | 
+	 exp BIN_OP exp|
+	 unary_OP exp
+	 
+# Several types of exceptions	 
+id_cmd_list: 
+	identifier: command | id_cmd_list id_cmd_list
 
-comment: #chars
+command: identifier = exp | 
+		 exp[exp]
+		 if (exp): command else: command | 
+		 loop: command |
+		 for identifier in list: command  | 
+		 command command |
+		 try: command except id_cmd_list
+		 raise Exception(list_elem) | return exp
+		 exp|
+		 exitwhen(exp)|
+		 function_call
+		 
 
-body: command | exp | comment 
+param_formal: identifier | identifier=exp
+listparamfformais: param_formal | param_formal, listparamfformais
 
-command: chars = exp | ; | \n |  if (logic_exp): body elif (logic_exp): body else: body | while(logic_exp): body | for chars in list: body  | print exp | command command
+function_def: def identifier(listparamfformais): command 
 
-function_def: def chars(list_exp): body return exp | function_def function_def 
+function_call: identifier(list_elem)
 
-function_call: chars(list_exp)
+program: function_def | command | program | lambda
 
-program: function_def body | body | body function_def body 
+
+*fazer try catch

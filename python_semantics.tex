@@ -1,0 +1,180 @@
+\documentclass{llncs}
+  \pdfpagewidth=8.5truein
+  \pdfpageheight=11truein
+
+\usepackage{graphicx,url} 
+\usepackage{tikz}
+\usepackage{times}
+%\usepackage[dvips]{graphicx}
+\usepackage{alltt} 
+\usepackage{amsmath}
+\usepackage{latexsym}
+\usepackage{listings}
+
+%%%%% OUR MACROS
+\newcommand{\sem}[1]{[ \! [ #1 ] \! ]}
+\newcommand{\guard}[1]{[ #1 ]}
+\newcommand{\tuple}[1]{\langle #1 \rangle}
+\newcommand{\trad}[1]{{\cal T}\sem{ #1 }}
+\newcommand{\setof}[1]{\{ #1 \} }
+\newcommand{\eval}[2]{\mathit{Eval}_{#1}(#2)}
+
+
+\def\tr{\rhd}    % transition relation
+
+\newcommand{\fpfrule}[2]{{{{\displaystyle #1}\over{\displaystyle #2}}}}
+\newcommand{\pfrule}[2]{\begin{array}{c} #1 \\ \hline #2 \end{array}}
+\newcommand{\pfruleN}[3]{\begin{array}{c} #1 \\ \hline #3 \end{array} \ (#2)}
+%\newcommand{\pfrule}[2]{\begin{array}{c} #1 \\[-0.5em] \hline #2 \end{array}}
+
+\newcommand{\rulegap}{\qquad}
+
+\newcommand{\alberto}[1]{\marginpar{\textcolor{magenta}{\textbf{Alberto: }#1}}}
+\newcommand{\ialberto}[1]{\textcolor{blue}{\textbf{Alberto: }#1}}
+
+\newcommand{\dan}[1]{\textcolor{red}{#1}}
+\newcommand{\idaniel}[1]{\textcolor{red}{\textbf{Daniel: }#1}}
+
+\def\vertices{{\cal V}}
+\def\crossDD{\mathsf{crossDD}}
+\newcommand{\comentario}[1]{}
+
+\lstset{numbers=right, numbersep=5pt, numberstyle=\tiny, stepnumber=1,escapechar=\!,columns=fullflexible,
+        morekeywords={procedure,let,for,do,if,then,else,add,choose,end,while,true,false,rise,exception,extend,resume,to}}
+
+\def\pews{$\mu$BP}
+\def\PEWSAM{BP-AM}
+\begin{document}
+
+\begin{itemize}
+  \item First step: Define the semantic domains
+  \item Second Step: Define Big Step semantics
+\end{itemize}
+
+
+
+
+\section{Semantic Domain - \textit{Python}}
+
+$$identifier \mapsto cell$$
+$$identifier \mapsto closure. $$
+$$cell \mapsto value$$
+$$value \Downarrow string\_literal$$
+$$value \Downarrow num\_literal$$
+$$value \Downarrow bool\_literal$$
+$$value \Downarrow list$$
+
+
+$$s, b \mapsto exp \Downarrow  s', b', v'$$
+
+
+
+$$b,s \mapsto C=B \Downarrow b[C\mapsto b(B)],s$$
+
+$$
+\textit{(string-add)}
+\pfrule
+{E1 \Downarrow string\_literal1 \hspace{5 mm} E2 \Downarrow string\_literal2}
+{E1+E2 \Downarrow string\_literal3}
+\textit{string\_literal3 = string\_literal1.string\_literal2}
+$$
+
+
+
+$$
+\textit{(num-add)}
+\pfrule
+{E1 \Downarrow num\_literal1 \hspace{5 mm} E2 \Downarrow num\_literal2}
+{E1+E2 \Downarrow num\_literal3}
+\textit{num\_literal3 = num\_literal1 + num\_literal2}
+$$
+
+$$
+\textit{(num-sub)}
+\pfrule
+{E1 \Downarrow num\_literal1 \hspace{5 mm} E2 \Downarrow num\_literal2}
+{E1-E2 \Downarrow num\_literal3}
+\textit{num\_literal3 = num\_literal1 - num\_literal2}
+$$
+
+$$
+\textit{(num-mult)}
+\pfrule
+{E1 \Downarrow num\_literal1 \hspace{5 mm} E2 \Downarrow num\_literal2}
+{E1 * E2 \Downarrow num\_literal3}
+\textit{num\_literal3 = num\_literal1 * num\_literal2}
+$$
+
+
+$$
+\textit{(num-div)}
+\pfrule
+{E1 \Downarrow num\_literal1 \hspace{5 mm} E2 \Downarrow num\_literal2}
+{E1 * E2 \Downarrow num\_literal3}
+\textit{num\_literal3 = num\_literal1 / num\_literal2}
+$$
+
+$$
+\textit{(variable-set)}
+\pfrule
+{s}
+{identifier = value}
+{\textit{(s[identifier] = cell, s[cell]=value,  s', b' )}}
+$$
+
+$$
+\textit{(if-clause-true)}
+\pfrule
+{if (exp): command1 else: command2 \hspace{5 mm}  exp \Downarrow True}
+{command1}
+{\textit{(s', b')}}
+$$
+
+$$
+\textit{(if-clause-false)}
+\pfrule
+{if (exp): command1 else: command2 \hspace{5 mm}  exp \Downarrow False}
+{command2}
+{\textit{(s', b')}}
+$$
+
+
+$$
+\textit{(access-list)}
+\pfrule
+{s[list\_identifier \mapsto cell] \hspace{5 mm} cell \mapsto value \hspace{5 mm} exp \Downarrow num\_literal}
+{list\_identifier[exp]}
+{\textit{(value, s, b)}}
+$$
+
+
+
+
+
+\newpage
+\paragraph{Esquema da máquina:}
+
+$$\tuple{G, \rho, I, O, M, T_E, N_{MT}} \ \tr\ \tuple{G', \rho', I', O', M', T'_E, N'_{MT}}$$
+
+
+
+
+
+\paragraph{Operation Call:}
+
+$$
+\pfrule{
+\mathit{indegree}(w) = 0 \qquad 
+\overline{a} = \eval{\rho}{\overline{E}} \qquad
+A'_c = A_c - \setof{w\mapsto v \ | \ v \in V} \qquad
+A'_d = A_d - \setof{w\mapsto v \ | \ v \in V} \\[1mm]
+G = \tuple{V[w:S!\overline{E}, \, w' : S?\overline{X}], A_c[w \mapsto w'], A_d} \qquad
+G' = \tuple{V[w' : S?\overline{X}], A'_c, A'_d}
+}{
+\tuple{G,\rho, I, O, M, T_E, N_{MT}}
+\; \tr \;
+\tuple{G',\rho, I, O[\tuple{S, w', \overline{a}}], M[\tuple{w:S!\overline{E}, \, w', \mathit{now()}, N_{MT}}], T_E, N_{MT}}
+}
+$$
+
+\end{document}
