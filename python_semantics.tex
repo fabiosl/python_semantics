@@ -21,6 +21,7 @@
 
 \newcommand{\transicaoExpressions}{$$s, b \vdash exp \Downarrow  s', b', v'$$}
 \newcommand{\transicaoExpressionsSubstituindo}[1]{$$s, b \vdash exp \Downarrow  s', b', v#1$$}
+\newcommand{\transicaoExpressionsSubstituindoAmbos}[2]{$$s, b \vdash #1 \Downarrow  s', b', v#2$$}
 \newcommand{\transicaoCommands}{$$b,s \vdash C \Downarrow b[C\mapsto b(C)],s'$$}
 \newcommand{\transicaoCommandsSubstituindo}[3] {
   $$b,s \vdash #1  \Downarrow b'#2, s'#3$$
@@ -86,7 +87,7 @@ $$value = string\_literal \cup num\_literal \cup bool\_literal \cup list$$
 
 
 Regras de atribui\c{c}\~ao
-
+\vspace{20 mm}
 
 
 Atribui\c{c}\~ao de Elemento n\~ao lista e que n\~ao exista nos bindings:
@@ -154,9 +155,9 @@ $$
 {\transicaoCommandsSubstituindo
 {exp1[exp2]=exp3}%command
 {}%b
-{[b'(exp1(exp2)) \mapsto exp3]}%s
+{[b'(exp1[exp2]) \mapsto exp3]}%s
 }
-\textit{ $v' \in list, v'' \in num_literal$ }
+\textit{ $v' \in list, v'' \in num\_literal$ }
 $$
 
 
@@ -223,106 +224,99 @@ $$
 $$
 \textit{ (string-add) }
 \pfrule
-{E1 \Downarrow string\_literal1 \hspace{5 mm} E2 \Downarrow string\_literal2}
-{E1+E2 \Downarrow string\_literal3}
-\textit{ string\_literal3 = string\_literal1.string\_literal2 }
+{\transicaoExpressionsSubstituindo{'}  \hspace{5 mm} \transicaoExpressionsSubstituindo{''}}
+{\transicaoExpressionsSubstituindoAmbos{exp + exp}{'''}}
+\textit{$(v''' = v' . v''), v' \in string\_literal, v'' \in string\_literal$}
 $$
 
 
 
 $$
-\textit{(num-add)}
+\textit{ (num-add) }
 \pfrule
-{E1 \Downarrow num\_literal1 \hspace{5 mm} E2 \Downarrow num\_literal2}
-{E1+E2 \Downarrow num\_literal3}
-\textit{num\_literal3 = num\_literal1 + num\_literal2}
+{\transicaoExpressionsSubstituindo{'}  \hspace{5 mm} \transicaoExpressionsSubstituindo{''}}
+{\transicaoExpressionsSubstituindoAmbos{exp + exp}{'''}}
+\textit{$(v''' = v' + v''), v' \in num\_literal, v'' \in num\_literal$}
 $$
 
 $$
-\textit{(num-sub)}
+\textit{ (num-sub) }
 \pfrule
-{E1 \Downarrow num\_literal1 \hspace{5 mm} E2 \Downarrow num\_literal2}
-{E1-E2 \Downarrow num\_literal3}
-\textit{num\_literal3 = num\_literal1 - num\_literal2}
+{\transicaoExpressionsSubstituindo{'}  \hspace{5 mm} \transicaoExpressionsSubstituindo{''}}
+{\transicaoExpressionsSubstituindoAmbos{exp - exp}{'''}}
+\textit{$(v''' = v' - v''), v' \in num\_literal, v'' \in num\_literal$}
 $$
 
 $$
-\textit{(num-mult)}
+\textit{ (num-mult) }
 \pfrule
-{E1 \Downarrow num\_literal1 \hspace{5 mm} E2 \Downarrow num\_literal2}
-{E1 * E2 \Downarrow num\_literal3}
-\textit{num\_literal3 = num\_literal1 * num\_literal2}
+{\transicaoExpressionsSubstituindo{'}  \hspace{5 mm} \transicaoExpressionsSubstituindo{''}}
+{\transicaoExpressionsSubstituindoAmbos{exp * exp}{'''}}
+\textit{$(v''' = v' * v''), v' \in num\_literal, v'' \in num\_literal$}
 $$
 
 
 $$
-\textit{(num-div)}
+\textit{ (num-div) }
 \pfrule
-{E1 \Downarrow num\_literal1 \hspace{5 mm} E2 \Downarrow num\_literal2}
-{E1 * E2 \Downarrow num\_literal3}
-\textit{num\_literal3 = num\_literal1 / num\_literal2}
-$$
-
-$$
-\textit{(variable-set)}
-\pfrule
-{s}
-{identifier = value}
-{\textit{(s[identifier] = cell, s[cell]=value,  s', b' )}}
-$$
-
-$$
-\textit{(if-clause-true)}
-\pfrule
-{if (exp): command1 else: command2 \hspace{5 mm}  exp \Downarrow True}
-{command1}
-{\textit{(s', b')}}
-$$
-
-$$
-\textit{(if-clause-false)}
-\pfrule
-{if (exp): command1 else: command2 \hspace{5 mm}  exp \Downarrow False}
-{command2}
-{\textit{(s', b')}}
+{\transicaoExpressionsSubstituindo{'}  \hspace{5 mm} \transicaoExpressionsSubstituindo{''}}
+{\transicaoExpressionsSubstituindoAmbos{exp / exp}{'''}}
+\textit{$(v''' = v' / v''), v' \in num\_literal, v'' \in num\_literal$}
 $$
 
 
-$$
-\textit{(access-list)}
-\pfrule
-{s[list\_identifier \mapsto cell] \hspace{5 mm} cell \mapsto value \hspace{5 mm} exp \Downarrow num\_literal}
-{list\_identifier[exp]}
-{\textit{(value, s, b)}}
-$$
+% $$
+% \textit{(if-clause-true)}
+% \pfrule
+% {if (exp): command1 else: command2 \hspace{5 mm}  exp \Downarrow True}
+% {command1}
+% {\textit{(s', b')}}
+% $$
+
+% $$
+% \textit{(if-clause-false)}
+% \pfrule
+% {if (exp): command1 else: command2 \hspace{5 mm}  exp \Downarrow False}
+% {command2}
+% {\textit{(s', b')}}
+% $$
+
+
+% $$
+% \textit{(access-list)}
+% \pfrule
+% {s[list\_identifier \mapsto cell] \hspace{5 mm} cell \mapsto value \hspace{5 mm} exp \Downarrow num\_literal}
+% {list\_identifier[exp]}
+% {\textit{(value, s, b)}}
+% $$
 
 
 
 
 
 \newpage
-\paragraph{Esquema da máquina:}
+% \paragraph{Esquema da máquina:}
 
-$$\tuple{G, \rho, I, O, M, T_E, N_{MT}} \ \tr\ \tuple{G', \rho', I', O', M', T'_E, N'_{MT}}$$
-
-
+% $$\tuple{G, \rho, I, O, M, T_E, N_{MT}} \ \tr\ \tuple{G', \rho', I', O', M', T'_E, N'_{MT}}$$
 
 
-\paragraph{Operation Call:}
 
-$$
-\pfrule{
-\mathit{indegree}(w) = 0 \qquad 
-\overline{a} = \eval{\rho}{\overline{E}} \qquad
-A'_c = A_c - \setof{w\mapsto v \ | \ v \in V} \qquad
-A'_d = A_d - \setof{w\mapsto v \ | \ v \in V} \\[1mm]
-G = \tuple{V[w:S!\overline{E}, \, w' : S?\overline{X}], A_c[w \mapsto w'], A_d} \qquad
-G' = \tuple{V[w' : S?\overline{X}], A'_c, A'_d}
-}{
-\tuple{G,\rho, I, O, M, T_E, N_{MT}}
-\; \tr \;
-\tuple{G',\rho, I, O[\tuple{S, w', \overline{a}}], M[\tuple{w:S!\overline{E}, \, w', \mathit{now()}, N_{MT}}], T_E, N_{MT}}
-}
-$$
+
+% \paragraph{Operation Call:}
+
+% $$
+% \pfrule{
+% \mathit{indegree}(w) = 0 \qquad 
+% \overline{a} = \eval{\rho}{\overline{E}} \qquad
+% A'_c = A_c - \setof{w\mapsto v \ | \ v \in V} \qquad
+% A'_d = A_d - \setof{w\mapsto v \ | \ v \in V} \\[1mm]
+% G = \tuple{V[w:S!\overline{E}, \, w' : S?\overline{X}], A_c[w \mapsto w'], A_d} \qquad
+% G' = \tuple{V[w' : S?\overline{X}], A'_c, A'_d}
+% }{
+% \tuple{G,\rho, I, O, M, T_E, N_{MT}}
+% \; \tr \;
+% \tuple{G',\rho, I, O[\tuple{S, w', \overline{a}}], M[\tuple{w:S!\overline{E}, \, w', \mathit{now()}, N_{MT}}], T_E, N_{MT}}
+% }
+% $$
 
 \end{document}
