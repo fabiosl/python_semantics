@@ -6,7 +6,8 @@ exp: string_literal |
 	 bool_literal | 
 	 list | 
 	 (exp) | 
-	 None | 
+	 None |
+	 exp[exp] | 
 	 function_call | 
 	 exp BIN_OP exp|
 	 unary_OP exp
@@ -15,15 +16,14 @@ exp: string_literal |
 id_cmd_list: 
 	identifier: command | id_cmd_list id_cmd_list
 
-command: identifier = exp | 
-		 exp[exp]
+command: identifier = exp |
+		 exp[exp] = exp |
 		 if (exp): command else: command | 
 		 loop: command |
-		 for identifier in list: command  | 
+		 for exp in list: command  | 
 		 command command |
 		 try: command except id_cmd_list
 		 raise Exception(list_elem) | return exp
-		 exp|
 		 exitwhen(exp)|
 		 function_call
 		 
@@ -36,6 +36,3 @@ function_def: def identifier(listparamfformais): command
 function_call: identifier(list_elem)
 
 program: function_def | command | program | lambda
-
-
-*fazer try catch

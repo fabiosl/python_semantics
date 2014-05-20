@@ -19,6 +19,15 @@
 \newcommand{\setof}[1]{\{ #1 \} }
 \newcommand{\eval}[2]{\mathit{Eval}_{#1}(#2)}
 
+\newcommand{\transicaoExpressions}{$$s, b \vdash exp \Downarrow  s', b', v'$$}
+\newcommand{\transicaoExpressionsSubstituindo}[1]{$$s, b \vdash exp \Downarrow  s', b', v#1$$}
+\newcommand{\transicaoCommands}{$$b,s \vdash C \Downarrow b[C\mapsto b(C)],s'$$}
+\newcommand{\transicaoCommandsSubstituindo}[3] {
+  $$b,s \vdash #1  \Downarrow b'#2, s'#3$$
+}
+
+
+
 
 \def\tr{\rhd}    % transition relation
 
@@ -56,27 +65,167 @@
 
 \section{Semantic Domain - \textit{Python}}
 
-$$identifier \mapsto cell$$
-$$identifier \mapsto closure. $$
-$$cell \mapsto value$$
-$$value \Downarrow string\_literal$$
-$$value \Downarrow num\_literal$$
-$$value \Downarrow bool\_literal$$
-$$value \Downarrow list$$
 
 
-$$s, b \mapsto exp \Downarrow  s', b', v'$$
+\setlength{\parindent}{0cm}Rela\c{c}\~ao de Transi\c{c}\~ao para Express\~oes:
+% $$s, b \vdash exp \Downarrow  s', b', v'$$
+\transicaoExpressions
+
+
+Rela\c{c}\~ao de Transi\c{c}\~ao para Comandos:
+\transicaoCommands
 
 
 
-$$b,s \mapsto C=B \Downarrow b[C\mapsto b(B)],s$$
+
+Bindings: $$(identifier \mapsto cell) \cup (identifier \mapsto closure).$$
+Store: $$cell \mapsto value$$
+$$value = string\_literal \cup num\_literal \cup bool\_literal \cup list$$
+\newpage
+
+
+
+Regras de atribui\c{c}\~ao
+
+
+
+Atribui\c{c}\~ao de Elemento n\~ao lista e que n\~ao exista nos bindings:
+$$
+\textit{}
+\pfrule
+{\transicaoExpressions}
+{\transicaoCommandsSubstituindo
+{identifier = exp}%command
+{[identifier\mapsto v]}%b
+{}%s
+}
+\textit{ $identifier \not \in dom(b), v \not \in list$ }
+$$
+
+Atribui\c{c}\~ao de Elemento n\~ao lista e que exista nos bindings:
+$$
+\textit{}
+\pfrule
+{\transicaoExpressions  }
+{\transicaoCommandsSubstituindo
+{identifier = exp}%command
+{[b(identifier) \mapsto v]}%b
+{}%s
+}
+\textit{ $identifier \in dom(b), v \not \in list$ }
+$$
+
+
+Atribui\c{c}\~ao de Elemento lista e que n\~ao exista nos bindings:
+$$
+\textit{}
+\pfrule
+{\transicaoExpressions \hspace{5 mm} k:=alloc(s', v)}
+{\transicaoCommandsSubstituindo
+{identifier = exp}%command
+{[identifier\mapsto k]}%b
+{[k \mapsto v]}%s
+}
+\textit{ $identifier \not \in dom(b), v \in list$ }
+$$
+
+
+Atribui\c{c}\~ao de Elemento lis\~aa e que exista nos bindings:
+$$
+\textit{}
+\pfrule
+{\transicaoExpressions}
+{\transicaoCommandsSubstituindo
+{identifier = exp}%command
+{}%b
+{[b'(identifier \mapsto v)]}%s
+}
+\textit{ $identifier \in dom(b), v \in list$ }
+$$
+
+\vspace{10 mm}
+\line(3,0){400}
+\vspace{10 mm}
+Atribui\c{c}\~ao em listas:
+$$
+\textit{(list-atrib)}
+\pfrule
+{\transicaoExpressionsSubstituindo{'} \vspace{5 mm} \transicaoExpressionsSubstituindo{''}  \vspace{5 mm} \transicaoExpressionsSubstituindo{'''}}
+{\transicaoCommandsSubstituindo
+{exp1[exp2]=exp3}%command
+{}%b
+{[b'(exp1(exp2)) \mapsto exp3]}%s
+}
+\textit{ $v' \in list, v'' \in num_literal$ }
+$$
+
+
+
+
+
+
+
+
+
+\newpage
+
+Regras de desvio condicional:
+
+
 
 $$
-\textit{(string-add)}
+\textit{(Expression evaluated as True)}
+\pfrule
+{\transicaoExpressions}
+{\transicaoCommandsSubstituindo
+{if (exp): C1 else: C2}%command
+{[C1]}%b
+{[C1]}%s
+}
+\textit{$ v = True $}
+$$
+
+
+
+$$
+\textit{(Expression evaluated as False)}
+\pfrule
+{\transicaoExpressions}
+{\transicaoCommandsSubstituindo
+{if (exp): C1 else: C2}%command
+{[C2]}%b
+{[C2]}%s
+}
+\textit{$ v = False$}
+$$
+
+
+
+
+For loop
+
+$$
+\textit{(For loop)}
+\pfrule
+{\transicaoExpressions}
+{\transicaoCommandsSubstituindo
+{for identifier in exp: command}%command
+{[command]}%b
+{[command]}%s
+}
+\textit{$exp \mapsto k, k \mapsto v, v \in list$}
+$$
+
+
+
+\newpage
+
+$$
+\textit{ (string-add) }
 \pfrule
 {E1 \Downarrow string\_literal1 \hspace{5 mm} E2 \Downarrow string\_literal2}
 {E1+E2 \Downarrow string\_literal3}
-\textit{string\_literal3 = string\_literal1.string\_literal2}
+\textit{ string\_literal3 = string\_literal1.string\_literal2 }
 $$
 
 
@@ -155,7 +304,6 @@ $$
 \paragraph{Esquema da máquina:}
 
 $$\tuple{G, \rho, I, O, M, T_E, N_{MT}} \ \tr\ \tuple{G', \rho', I', O', M', T'_E, N'_{MT}}$$
-
 
 
 
