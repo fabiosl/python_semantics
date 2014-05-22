@@ -19,13 +19,10 @@
 \newcommand{\setof}[1]{\{ #1 \} }
 \newcommand{\eval}[2]{\mathit{Eval}_{#1}(#2)}
 
-\newcommand{\transicaoExpressions}{$$s, b \vdash exp \Downarrow  s', b', v'$$}
-\newcommand{\transicaoExpressionsSubstituindo}[1]{$$s, b \vdash exp \Downarrow  s', b', v#1$$}
-\newcommand{\transicaoExpressionsSubstituindoAmbos}[2]{$$s, b \vdash #1 \Downarrow  s', b', v#2$$}
-\newcommand{\transicaoCommands}{$$b,s \vdash C \Downarrow b[C\mapsto b(C)],s'$$}
-\newcommand{\transicaoCommandsSubstituindo}[3] {
-  $$b,s \vdash #1  \Downarrow b'#2, s'#3$$
-}
+\newcommand{\expressionsTransitionRule}[6]{$$\mathit{s#1}, \mathit{b#2} \vdash \mathit{#3} \Downarrow  \mathit{s#4}, \mathit{b#5}, \mathit{v#6}\qquad$$}
+\newcommand{\commandsTransitionRule}[5] {$$\mathit{s#1},\mathit{b#2} \vdash \mathit{#3} \Downarrow \mathit{s#4}, \mathit{b#5}$$}
+
+
 
 
 
@@ -57,7 +54,7 @@
 \begin{document}
 
 \begin{itemize}
-  \item First step: Define the semantic domains
+  \item First Step: Define the semantic domains
   \item Second Step: Define Big Step semantics
 \end{itemize}
 
@@ -68,13 +65,18 @@
 
 
 
-\setlength{\parindent}{0cm}Rela\c{c}\~ao de Transi\c{c}\~ao para Express\~oes:
+\setlength{\parindent}{0cm}
+Expressions' transitions rules:
 % $$s, b \vdash exp \Downarrow  s', b', v'$$
-\transicaoExpressions
+\expressionsTransitionRule{}{}{exp}{'}{'}{}
 
 
-Rela\c{c}\~ao de Transi\c{c}\~ao para Comandos:
-\transicaoCommands
+Commands' transition rule:
+\commandsTransitionRule{}{}{C}{'}{'}
+
+
+
+
 
 
 
@@ -92,75 +94,73 @@ Regras de atribui\c{c}\~ao
 
 Atribui\c{c}\~ao de Elemento n\~ao lista e que n\~ao exista nos bindings:
 $$
-\textit{}
+\textit{(list-attrib-1)}
 \pfrule
-{\transicaoExpressions}
-{\transicaoCommandsSubstituindo
-{identifier = exp}%command
-{[identifier\mapsto v]}%b
-{}%s
-}
-\textit{ $identifier \not \in dom(b), v \not \in list$ }
+{\expressionsTransitionRule{}{}{exp}{'}{'}{}}
+{\commandsTransitionRule{}{}{ \mathit{identifier} =  \mathit{exp}}{'}{'[identifier \mapsto v]}}
+{identifier \not \in dom(b) , v \not \in list}
 $$
 
 Atribui\c{c}\~ao de Elemento n\~ao lista e que exista nos bindings:
 $$
-\textit{}
+\textit{(list-attrib-2)}
 \pfrule
-{\transicaoExpressions  }
-{\transicaoCommandsSubstituindo
-{identifier = exp}%command
-{[b(identifier) \mapsto v]}%b
-{}%s
-}
-\textit{ $identifier \in dom(b), v \not \in list$ }
+{\expressionsTransitionRule{}{}{exp}{'}{'}{}}
+{\commandsTransitionRule{}{}{ \mathit{identifier} =  \mathit{exp}}{'}{'[b(identifier) \mapsto v]}}
+{identifier \in dom(b) , v \not \in list}
 $$
-
 
 Atribui\c{c}\~ao de Elemento lista e que n\~ao exista nos bindings:
 $$
-\textit{}
+\textit{(list-attrib-3)}
 \pfrule
-{\transicaoExpressions \hspace{5 mm} k:=alloc(s', v)}
-{\transicaoCommandsSubstituindo
-{identifier = exp}%command
-{[identifier\mapsto k]}%b
-{[k \mapsto v]}%s
+{\expressionsTransitionRule{}{}{exp}{'}{'}{}
+k:= alloc(s',v)
 }
-\textit{ $identifier \not \in dom(b), v \in list$ }
+{\commandsTransitionRule{}{}{ \mathit{identifier} =  \mathit{exp}}{'[k\mapsto v]}{'[identifier \mapsto v]}}
+{identifier \not \in dom(b) , v \in list}
 $$
-
 
 Atribui\c{c}\~ao de Elemento lis\~aa e que exista nos bindings:
 $$
-\textit{}
+\textit{(list-attrib-4)}
 \pfrule
-{\transicaoExpressions}
-{\transicaoCommandsSubstituindo
-{identifier = exp}%command
-{}%b
-{[b'(identifier \mapsto v)]}%s
+{\expressionsTransitionRule{}{}{exp}{'}{'}{}
 }
-\textit{ $identifier \in dom(b), v \in list$ }
+{
+\commandsTransitionRule
+{}
+{}
+{ \mathit{identifier} =  \mathit{exp}}
+{'[b'(identifier) \mapsto v]}
+{'}
+
+}
+{identifier \in dom(b) , v \in list}
 $$
 
 \vspace{10 mm}
 \line(3,0){400}
 \vspace{10 mm}
+
 Atribui\c{c}\~ao em listas:
+
+
 $$
-\textit{(list-atrib)}
+\textit{(list-attrib)}
 \pfrule
-{\transicaoExpressionsSubstituindo{'} \vspace{5 mm} \transicaoExpressionsSubstituindo{''}  \vspace{5 mm} \transicaoExpressionsSubstituindo{'''}}
-{\transicaoCommandsSubstituindo
-{exp1[exp2]=exp3}%command
-{}%b
-{[b'(exp1[exp2]) \mapsto exp3]}%s
+{
+\expressionsTransitionRule{}{}{exp1}{'}{'}{K}
+\expressionsTransitionRule{'}{'}{exp2}{''}{''}{I}
+\\[1mm]
+\expressionsTransitionRule{''}{''}{exp3}{'''}{'''}{V} 
+update(s'''(vK),vI,vV) = l 
 }
-\textit{ $v' \in list, v'' \in num\_literal$ }
+{
+\commandsTransitionRule{}{}{ \mathit{exp1} \mathit{[exp2]} = \mathit{exp3} }{'''[k \mapsto l]}{'''}
+}
+{}
 $$
-
-
 
 
 
@@ -175,29 +175,31 @@ Regras de desvio condicional:
 
 
 $$
-\textit{(Expression evaluated as True)}
+\textit{(if-true)}
 \pfrule
-{\transicaoExpressions}
-{\transicaoCommandsSubstituindo
-{if (exp): C1 else: C2}%command
-{[C1]}%b
-{[C1]}%s
+{
+\expressionsTransitionRule{}{}{exp}{'}{'}{'} 
+\commandsTransitionRule{'}{'}{\mathit{C1}}{''}{''}
 }
-\textit{$ v = True $}
+{
+\commandsTransitionRule{}{}{\mathit{if} \mathit{exp:} \mathit{C1} \mathit{else:} \mathit{C2}}{''}{''}
+}
+\textit{$ v' = True $}
 $$
 
 
 
 $$
-\textit{(Expression evaluated as False)}
+\textit{(if-false)}
 \pfrule
-{\transicaoExpressions}
-{\transicaoCommandsSubstituindo
-{if (exp): C1 else: C2}%command
-{[C2]}%b
-{[C2]}%s
+{
+\expressionsTransitionRule{}{}{exp}{'}{'}{'} 
+\commandsTransitionRule{'}{'}{\mathit{C2}}{''}{''}
 }
-\textit{$ v = False$}
+{
+\commandsTransitionRule{}{}{\mathit{if} \mathit{exp:} \mathit{C1} \mathit{else:} \mathit{C2}}{''}{''}
+}
+\textit{$ v' = False $}
 $$
 
 
@@ -205,17 +207,35 @@ $$
 
 For loop
 
+\newcommand{\forRuleA}{$$\mathit{s, b, [], i} \vdash C \Downarrow s, b\qquad$$}
+\newcommand{\forRuleB}{$$\mathit{s, b[i \mapsto v]} \vdash C \Downarrow s', b'\qquad$$}
+\newcommand{\forRuleC}{$$\mathit{s', b', l, i} \vdash C \Downarrow s'', b''\qquad$$}
+
+
+Transition rules for $\mathit{for}$ clause:
+\forRuleA
+\forRuleB
+\forRuleC
+
+
+
 $$
-\textit{(For loop)}
+\textit{(for-loop)}
 \pfrule
-{\transicaoExpressions}
-{\transicaoCommandsSubstituindo
-{for identifier in exp: command}%command
-{[command]}%b
-{[command]}%s
+{
+\expressionsTransitionRule{}{}{exp}{'}{'}{} 
+\forRuleB
+\forRuleC
+% $\mathit{s', b', l, i} \vdash C \Downarrow s'', b''$
 }
-\textit{$exp \mapsto k, k \mapsto v, v \in list$}
+{\commandsTransitionRule{'}{'}{\mathit{for} \mathit{identifier} \mathit{in}  \mathit{exp:} \mathit{C}}{''}{''}
+}
+\textit{$v \in list$}
 $$
+
+
+
+
 
 
 
@@ -224,71 +244,23 @@ $$
 $$
 \textit{ (string-add) }
 \pfrule
-{\transicaoExpressionsSubstituindo{'}  \hspace{5 mm} \transicaoExpressionsSubstituindo{''}}
-{\transicaoExpressionsSubstituindoAmbos{exp + exp}{'''}}
-\textit{$(v''' = v' . v''), v' \in string\_literal, v'' \in string\_literal$}
+{\expressionsTransitionRule{}{}{exp1}{'}{'}{'} 
+% \\[1mm]
+ \expressionsTransitionRule{'}{'}{exp2}{''}{''}{''}
+}
+{\expressionsTransitionRule{''}{''}{exp1 + exp2}{'''}{'''}{'''} }
+\textit{$v''' = v' . v''$}
 $$
 
-
-
 $$
-\textit{ (num-add) }
+\textit{(access-list)}
 \pfrule
-{\transicaoExpressionsSubstituindo{'}  \hspace{5 mm} \transicaoExpressionsSubstituindo{''}}
-{\transicaoExpressionsSubstituindoAmbos{exp + exp}{'''}}
-\textit{$(v''' = v' + v''), v' \in num\_literal, v'' \in num\_literal$}
+{\expressionsTransitionRule{}{}{exp1}{'}{'}{L}
+ \expressionsTransitionRule{'}{'}{exp2}{''}{''}{I}
+}
+{\expressionsTransitionRule{}{}{exp1[exp2]}{'''}{'''}{}}
+{\textit{$vL \in list$}}
 $$
-
-$$
-\textit{ (num-sub) }
-\pfrule
-{\transicaoExpressionsSubstituindo{'}  \hspace{5 mm} \transicaoExpressionsSubstituindo{''}}
-{\transicaoExpressionsSubstituindoAmbos{exp - exp}{'''}}
-\textit{$(v''' = v' - v''), v' \in num\_literal, v'' \in num\_literal$}
-$$
-
-$$
-\textit{ (num-mult) }
-\pfrule
-{\transicaoExpressionsSubstituindo{'}  \hspace{5 mm} \transicaoExpressionsSubstituindo{''}}
-{\transicaoExpressionsSubstituindoAmbos{exp * exp}{'''}}
-\textit{$(v''' = v' * v''), v' \in num\_literal, v'' \in num\_literal$}
-$$
-
-
-$$
-\textit{ (num-div) }
-\pfrule
-{\transicaoExpressionsSubstituindo{'}  \hspace{5 mm} \transicaoExpressionsSubstituindo{''}}
-{\transicaoExpressionsSubstituindoAmbos{exp / exp}{'''}}
-\textit{$(v''' = v' / v''), v' \in num\_literal, v'' \in num\_literal$}
-$$
-
-
-% $$
-% \textit{(if-clause-true)}
-% \pfrule
-% {if (exp): command1 else: command2 \hspace{5 mm}  exp \Downarrow True}
-% {command1}
-% {\textit{(s', b')}}
-% $$
-
-% $$
-% \textit{(if-clause-false)}
-% \pfrule
-% {if (exp): command1 else: command2 \hspace{5 mm}  exp \Downarrow False}
-% {command2}
-% {\textit{(s', b')}}
-% $$
-
-
-% $$
-% \textit{(access-list)}
-% \pfrule
-% {s[list\_identifier \mapsto cell] \hspace{5 mm} cell \mapsto value \hspace{5 mm} exp \Downarrow num\_literal}
-% {list\_identifier[exp]}
-% {\textit{(value, s, b)}}
-% $$
 
 
 
@@ -304,19 +276,19 @@ $$
 
 % \paragraph{Operation Call:}
 
-% $$
-% \pfrule{
-% \mathit{indegree}(w) = 0 \qquad 
-% \overline{a} = \eval{\rho}{\overline{E}} \qquad
-% A'_c = A_c - \setof{w\mapsto v \ | \ v \in V} \qquad
-% A'_d = A_d - \setof{w\mapsto v \ | \ v \in V} \\[1mm]
-% G = \tuple{V[w:S!\overline{E}, \, w' : S?\overline{X}], A_c[w \mapsto w'], A_d} \qquad
-% G' = \tuple{V[w' : S?\overline{X}], A'_c, A'_d}
-% }{
-% \tuple{G,\rho, I, O, M, T_E, N_{MT}}
-% \; \tr \;
-% \tuple{G',\rho, I, O[\tuple{S, w', \overline{a}}], M[\tuple{w:S!\overline{E}, \, w', \mathit{now()}, N_{MT}}], T_E, N_{MT}}
-% }
-% $$
+$$
+\pfrule{
+\mathit{indegree}(w) = 0 \qquad 
+\overline{a} = \eval{\rho}{\overline{E}} \qquad
+A'_c = A_c - \setof{w\mapsto v \ | \ v \in V} \qquad
+A'_d = A_d - \setof{w\mapsto v \ | \ v \in V} \\[1mm]
+G = \tuple{V[w:S!\overline{E}, \, w' : S?\overline{X}], A_c[w \mapsto w'], A_d} \qquad
+G' = \tuple{V[w' : S?\overline{X}], A'_c, A'_d}
+}{
+\tuple{G,\rho, I, O, M, T_E, N_{MT}}
+\; \tr \;
+\tuple{G',\rho, I, O[\tuple{S, w', \overline{a}}], M[\tuple{w:S!\overline{E}, \, w', \mathit{now()}, N_{MT}}], T_E, N_{MT}}
+}
+$$
 
 \end{document}
