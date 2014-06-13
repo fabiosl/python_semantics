@@ -10,6 +10,8 @@
 \usepackage{amsmath}
 \usepackage{latexsym}
 \usepackage{listings}
+\usepackage[margin=0.5in]{geometry}
+\usepackage[T1]{fontenc}
 
 %%%%% OUR MACROS
 \newcommand{\sem}[1]{[ \! [ #1 ] \! ]}
@@ -27,7 +29,7 @@
 
 
 
-\def\tr{\rhd}    % transition relation
+\def\tr{\rhd}  % transition relation
 
 \newcommand{\fpfrule}[2]{{{{\displaystyle #1}\over{\displaystyle #2}}}}
 \newcommand{\pfrule}[2]{\begin{array}{c} #1 \\ \hline #2 \end{array}}
@@ -53,13 +55,6 @@
 \def\PEWSAM{BP-AM}
 \begin{document}
 
-\begin{itemize}
-  \item First Step: Define the semantic domains
-  \item Second Step: Define Big Step semantics
-\end{itemize}
-
-
-
 
 \section{Semantic Domain - \textit{Python}}
 
@@ -78,30 +73,60 @@ Commands' transition rule:
 
 
 
-
-
-
 Bindings: $$(identifier \mapsto cell) \cup (identifier \mapsto closure).$$
 Store: $$cell \mapsto value$$
 $$value = string\_literal \cup num\_literal \cup bool\_literal \cup list$$
 \newpage
+\section{Big Step Semantics for Python Programming Language}
+
+
+\subsection{Expressions:}
+
+$$
+\textit{(access-list)}
+\pfrule
+{\expressionsTransitionRule{}{}{exp1}{'}{'}{L}
+ \expressionsTransitionRule{'}{'}{exp2}{''}{''}{I}
+}
+{\expressionsTransitionRule{}{}{exp1[exp2]}{'''}{'''}{}}
+{\textit{$vL \in list$}}
+$$
+
+$$
+\textit{ (string-add) }
+\pfrule
+{\expressionsTransitionRule{}{}{exp1}{'}{'}{'} 
+% \\[1mm]
+ \expressionsTransitionRule{'}{'}{exp2}{''}{''}{''}
+}
+{\expressionsTransitionRule{''}{''}{exp1 + exp2}{'''}{'''}{'''} }
+\textit{$v''' = v' . v''$}
+$$
+
+... Add all kinds of expressions for math domain: (add, subtract, division, exponentiation)
+
+... Add all kinds of expressions for logic domain: (and, or, not, <, >, <=, >=, ==, !=, ternaryoperator)
 
 
 
-Regras de atribui\c{c}\~ao
-\vspace{20 mm}
+
+\newpage
+\subsection{Commands:}
+
+\subsubsection{Assignments:}
 
 
-Atribui\c{c}\~ao de Elemento n\~ao lista e que n\~ao exista nos bindings:
+Assignment of non-list element that is not present on the bindings:
+
 $$
 \textit{(list-attrib-1)}
 \pfrule
 {\expressionsTransitionRule{}{}{exp}{'}{'}{}}
 {\commandsTransitionRule{}{}{ \mathit{identifier} =  \mathit{exp}}{'}{'[identifier \mapsto v]}}
-{identifier \not \in dom(b) , v \not \in list}
+{\mathit{identifier} \not \in dom(b) , v \not \in list}
 $$
 
-Atribui\c{c}\~ao de Elemento n\~ao lista e que exista nos bindings:
+Assignment of non-list element that is present on the bindings:
 $$
 \textit{(list-attrib-2)}
 \pfrule
@@ -110,42 +135,31 @@ $$
 {identifier \in dom(b) , v \not \in list}
 $$
 
-Atribui\c{c}\~ao de Elemento lista e que n\~ao exista nos bindings:
+Assignment of list element that is not present on the bindings:
 $$
 \textit{(list-attrib-3)}
 \pfrule
 {\expressionsTransitionRule{}{}{exp}{'}{'}{}
 k:= alloc(s',v)
 }
-{\commandsTransitionRule{}{}{ \mathit{identifier} =  \mathit{exp}}{'[k\mapsto v]}{'[identifier \mapsto v]}}
+{\commandsTransitionRule{}{}{ \mathit{identifier} =  \mathit{exp}}{'[k\mapsto v]}{'[identifier \mapsto k]}}
 {identifier \not \in dom(b) , v \in list}
 $$
 
-Atribui\c{c}\~ao de Elemento lis\~aa e que exista nos bindings:
+Assignment of list element that is present on the bindings:
 $$
 \textit{(list-attrib-4)}
 \pfrule
 {\expressionsTransitionRule{}{}{exp}{'}{'}{}
 }
 {
-\commandsTransitionRule
-{}
-{}
-{ \mathit{identifier} =  \mathit{exp}}
-{'[b'(identifier) \mapsto v]}
-{'}
-
+\commandsTransitionRule{}{}{ \mathit{identifier} =  \mathit{exp}}{'[b'(identifier) \mapsto v]}{'}
 }
 {identifier \in dom(b) , v \in list}
 $$
 
-\vspace{10 mm}
-\line(3,0){400}
-\vspace{10 mm}
 
-Atribui\c{c}\~ao em listas:
-
-
+List assignments:
 $$
 \textit{(list-attrib)}
 \pfrule
@@ -163,16 +177,7 @@ update(s'''(vK),vI,vV) = l
 $$
 
 
-
-
-
-
-
-\newpage
-
-Regras de desvio condicional:
-
-
+\subsubsection{Conditional Clauses:}
 
 $$
 \textit{(if-true)}
@@ -184,7 +189,7 @@ $$
 {
 \commandsTransitionRule{}{}{\mathit{if} \mathit{exp:} \mathit{C1} \mathit{else:} \mathit{C2}}{''}{''}
 }
-\textit{$ v' = True $}
+\textit{$ \qquad v' = True $}
 $$
 
 
@@ -199,39 +204,152 @@ $$
 {
 \commandsTransitionRule{}{}{\mathit{if} \mathit{exp:} \mathit{C1} \mathit{else:} \mathit{C2}}{''}{''}
 }
-\textit{$ v' = False $}
+\textit{$ \qquad v' = False $}
 $$
 
 
 
-
-For loop
-
-\newcommand{\forRuleA}{$$\mathit{s, b, [], i} \vdash C \Downarrow s, b\qquad$$}
-\newcommand{\forRuleB}{$$\mathit{s, b[i \mapsto v]} \vdash C \Downarrow s', b'\qquad$$}
-\newcommand{\forRuleC}{$$\mathit{s', b', l, i} \vdash C \Downarrow s'', b''\qquad$$}
-
-
-Transition rules for $\mathit{for}$ clause:
-\forRuleA
-\forRuleB
-\forRuleC
-
-
+\subsubsection{For Loop}
 
 $$
-\textit{(for-loop)}
+\textit{(for-base-case)}
+\pfrule
+{}
+{s,b, [\hspace{2 mm} ], i \vdash command \Downarrow s,b}
+{}
+$$
+
+$$
+\textit{(for-induction)}
 \pfrule
 {
-\expressionsTransitionRule{}{}{exp}{'}{'}{} 
-\forRuleB
-\forRuleC
-% $\mathit{s', b', l, i} \vdash C \Downarrow s'', b''$
+s,b[i\mapsto head] \vdash command \Downarrow s', b'
+\qquad
+s',b', tail, i \vdash command \Downarrow s'', b''
 }
-{\commandsTransitionRule{'}{'}{\mathit{for} \mathit{identifier} \mathit{in}  \mathit{exp:} \mathit{C}}{''}{''}
-}
-\textit{$v \in list$}
+{s,b,[head,tail],i \vdash command \Downarrow s'',b''}
+{}
 $$
+
+
+$$
+\textit{(for-execution)}
+\pfrule
+{
+$$\mathit{s}, \mathit{b} \vdash \mathit{exp} \Downarrow  \mathit{s'}, \mathit{b'}, \mathit{[head,tail]}$$ \qquad  \textit{(for-induction)}
+
+}
+{
+$$s,b \vdash for \: i \: in\:  exp: \: command \Downarrow s'', b''$$
+}
+{}
+$$
+
+
+
+\subsubsection{Function Definition}
+
+$$
+\textit{(func-def)}
+\pfrule
+{}
+{
+s,b \vdash def \: \mathit{identifier} (listParamFormais) \: command \Downarrow s, b'[identifier \mapsto (listParamFormais, command)]
+}
+{}
+$$
+
+
+
+\newpage
+
+New Rule for commands (update previous definitions):
+$${s,b \vdash command \Downarrow s', b', \mathit{t}, \mathit{v}}, \mathit{z} $$ 
+Where
+$$\mathit{t} = Return param$$
+$$\mathit{v} = Returned Value$$
+$$\mathit{z} = Exit Loop Param$$
+
+
+\subsubsection{Loop exitwhen(exp)}
+
+$$
+\textit{(loop-1)}
+\pfrule
+{s,b \vdash command \Downarrow s', b', t, v, true}
+{s,b \vdash loop: command \Downarrow s', b', t, \mathit{v}, true}
+{}
+$$
+
+$$
+\textit{(loop-2)}
+\pfrule
+{
+s,b \vdash command \Downarrow s', b', false, \mathit{v}, false
+\qquad
+s', b' \vdash loop: \mathit{command} \Downarrow s', b', false, \mathit{v}, true
+}
+{s,b \vdash loop: \mathit{command} \Downarrow s', b', false, \mathit{v}, true}
+{}
+$$
+
+
+$$
+\textit{(exitwhen-false)}
+\pfrule
+{s,b \vdash exp \Downarrow s', b', false}
+{s,b \vdash exitwhen (exp) \Downarrow s', b', false, None, false}
+{}
+$$
+
+
+$$
+\textit{(exitwhen-true)}
+\pfrule
+{s,b \vdash exp \Downarrow s', b', true}
+{s,b \vdash exitwhen (exp) \Downarrow s', b', false, None, true}
+{}
+$$
+
+
+
+
+
+
+\vspace{20 mm}
+Function call + Return
+
+$$
+\textit{(return)}
+\pfrule
+{s,b \vdash exp \Downarrow s', b', v}
+{s,b \vdash return (exp) \Downarrow s', b', true, v, false}
+{}
+$$
+
+
+$$
+\textit{(functioncall)}
+\pfrule
+{
+
+
+s,b[P \mapsto (\overline{x}, command) ] \vdash \overline{e} \Downarrow s', b', \overline{v} \\[1mm]
+s', b'[P \mapsto (\overline{x}, command), Xi \mapsto Vi] \vdash command \Downarrow s'', b'', \mathit{t}, v', z 
+}
+{s,b[P \mapsto (\overline{x}, command) ] \vdash P(\overline{e}) \Downarrow s'', b''', false, v', false}
+{\qquad b''' = b'' - \{ Xi \mapsto Vi \}}
+$$
+
+Where
+$$\mathit{\overline{x}} = Formal Parameters Tuple$$
+$$\mathit{\overline{e}} = Real Parameters tuple$$
+$$\mathit{\overline{v}} = Tuple of evaluated values$$
+$$\mathit{P} = FunctionIdentifier$$
+
+
+
+
 
 
 
@@ -241,54 +359,94 @@ $$
 
 \newpage
 
-$$
-\textit{ (string-add) }
+
+
+New Rule for commands (update previous definitions):
+$${s,b \vdash command \Downarrow s', b', \mathit{t}, \mathit{v}}, \mathit{z}, w, q $$ 
+Where
+$$\mathit{t} = Return param$$
+$$\mathit{v} = Returned Value$$
+$$\mathit{z} = Exit Loop Param$$
+$$\mathit{w} = Exception Param$$
+$$\mathit{q} = Exception Type$$
+
+\vspace{10mm}
+\vspace{10mm}
+Try - Except: No exception
+{\small $$
+\textit{(noException)}
 \pfrule
-{\expressionsTransitionRule{}{}{exp1}{'}{'}{'} 
-% \\[1mm]
- \expressionsTransitionRule{'}{'}{exp2}{''}{''}{''}
+{
+{\small s,b \vdash addBind(idCommandList) \Downarrow s, b'[ExcepI \mapsto Ci], False, None, False, False, None}\\[1mm]
+{\small s, b'[ExcepI \mapsto Ci] \vdash command \Downarrow s', b''[ExcepI \mapsto Ci], t, v, z, false, None}\\[1mm]
+{\small s', b''[ExcepI \mapsto Ci \vdash removeBind(idCommandList) \Downarrow s', b''',False, None, False, False, None}
 }
-{\expressionsTransitionRule{''}{''}{exp1 + exp2}{'''}{'''}{'''} }
-\textit{$v''' = v' . v''$}
-$$
+{s,b \vdash try: \mathit{command} - except: idCommandList \Downarrow s', b''', t,v,z, False, None}
+{}
+$$}
 
-$$
-\textit{(access-list)}
+
+
+
+Try - Except
+
+
+{\small $$
+\textit{(tryExcept)}
 \pfrule
-{\expressionsTransitionRule{}{}{exp1}{'}{'}{L}
- \expressionsTransitionRule{'}{'}{exp2}{''}{''}{I}
+{
+{\small s,b \vdash addBind(idCommandList) \Downarrow s, b'[ExcepI \mapsto Ci], False, None, False, False, None}\\[1mm]
+{\small s, b'[ExcepI \mapsto Ci] \vdash command \Downarrow s', b''[ExcepI \mapsto Ci], t, v, z, True, ExceptionA}\\[1mm]
+{\small s', b''[ExcepI \mapsto Ci] \vdash handleException(ExceptionA) \Downarrow s', b''[ExcepI \mapsto Ci], t', v', z', w', q'}\\[1mm]
+{\small s', b''[ExcepI \mapsto Ci] \vdash removeBind(idCommandList) \Downarrow s', b''',False, None, False, False, None}
 }
-{\expressionsTransitionRule{}{}{exp1[exp2]}{'''}{'''}{}}
-{\textit{$vL \in list$}}
-$$
+{s,b \vdash try: \mathit{command} - except: idCommandList \Downarrow s', b''', t',v',z', w', q'}
+{}
+$$}
 
 
 
 
-
-\newpage
-% \paragraph{Esquema da máquina:}
-
-% $$\tuple{G, \rho, I, O, M, T_E, N_{MT}} \ \tr\ \tuple{G', \rho', I', O', M', T'_E, N'_{MT}}$$
-
-
-
-
-% \paragraph{Operation Call:}
-
-$$
-\pfrule{
-\mathit{indegree}(w) = 0 \qquad 
-\overline{a} = \eval{\rho}{\overline{E}} \qquad
-A'_c = A_c - \setof{w\mapsto v \ | \ v \in V} \qquad
-A'_d = A_d - \setof{w\mapsto v \ | \ v \in V} \\[1mm]
-G = \tuple{V[w:S!\overline{E}, \, w' : S?\overline{X}], A_c[w \mapsto w'], A_d} \qquad
-G' = \tuple{V[w' : S?\overline{X}], A'_c, A'_d}
-}{
-\tuple{G,\rho, I, O, M, T_E, N_{MT}}
-\; \tr \;
-\tuple{G',\rho, I, O[\tuple{S, w', \overline{a}}], M[\tuple{w:S!\overline{E}, \, w', \mathit{now()}, N_{MT}}], T_E, N_{MT}}
+{\small $$
+\textit{(Recover)}
+\pfrule
+{
+s, b[ExcepI \mapsto Ci] \vdash if ( ExceptionA \in \{ExceptionStack\}) Ca \Downarrow s',b', t, v, z, w, q
 }
-$$
+{s,b[ExcepI \mapsto Ci] \vdash handleException(ExceptionA) \Downarrow s', b', t, v, z, w, q}
+{}
+$$}
+
+
+
+
+{\small $$
+\textit{(Kill)}
+\pfrule
+{
+s, b[ExcepI \mapsto Ci] \vdash if ( ExceptionA \not \in \{ExceptionStack\}) kill \Downarrow s,b, False, None, False, True, SIGKILL
+}
+{s,b[ExcepI \mapsto Ci] \vdash handleException(ExceptionA) \Downarrow s, b, False, True, SIGKILL}
+{}
+$$}
+
+
+%
+%\newpage
+%
+%$$
+%\pfrule{
+%\mathit{indegree}(w) = 0 \qquad 
+%\overline{a} = \eval{\rho}{\overline{E}} \qquad
+%A'_c = A_c - \setof{w\mapsto v \ | \ v \in V} \qquad
+%A'_d = A_d - \setof{w\mapsto v \ | \ v \in V} \\[1mm]
+%G = \tuple{V[w:S!\overline{E}, \, w' : S?\overline{X}], A_c[w \mapsto w'], A_d} \qquad
+%G' = \tuple{V[w' : S?\overline{X}], A'_c, A'_d}
+%}{
+%\tuple{G,\rho, I, O, M, T_E, N_{MT}}
+%\; \tr \;
+%\tuple{G',\rho, I, O[\tuple{S, w', \overline{a}}], M[\tuple{w:S!\overline{E}, \, w', \mathit{now()}, N_{MT}}], T_E, N_{MT}}
+%}
+%$$
 
 \end{document}
